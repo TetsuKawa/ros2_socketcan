@@ -13,7 +13,7 @@ endif()
 # find dependencies
 find_package(ament_cmake_auto REQUIRED)
 find_package(agnocast_components REQUIRED)
-find_package(cie_thread_configurator) REQUIRED)
+find_package(cie_thread_configurator REQUIRED)
 ament_auto_find_build_dependencies()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED

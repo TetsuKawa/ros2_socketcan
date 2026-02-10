@@ -12,6 +12,8 @@ endif()
 
 # find dependencies
 find_package(ament_cmake_auto REQUIRED)
+find_package(agnocast_components REQUIRED)
+find_package(agnocastlib REQUIRED)
 ament_auto_find_build_dependencies()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
@@ -23,14 +25,18 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 ament_auto_add_library(socket_can_receiver_node SHARED
   src/socket_can_receiver_node.cpp
 )
+ament_target_dependencies(socket_can_receiver_node
+  agnocastlib
+)
 
 target_link_libraries(socket_can_receiver_node
   ${PROJECT_NAME}
 )
 
-rclcpp_components_register_node(socket_can_receiver_node
+agnocast_components_register_node(socket_can_receiver_node
   PLUGIN "drivers::socketcan::SocketCanReceiverNode"
   EXECUTABLE socket_can_receiver_node_exe
+  EXECUTOR CallbackIsolatedAgnocastExecutor
 )
 
 ament_auto_add_library(socket_can_sender_node SHARED
@@ -41,9 +47,10 @@ target_link_libraries(socket_can_sender_node
   ${PROJECT_NAME}
 )
 
-rclcpp_components_register_node(socket_can_sender_node
+agnocast_components_register_node(socket_can_sender_node
   PLUGIN "drivers::socketcan::SocketCanSenderNode"
   EXECUTABLE socket_can_sender_node_exe
+  EXECUTOR CallbackIsolatedAgnocastExecutor
 )
 
 if(BUILD_TESTING)

@@ -17,7 +17,7 @@
 #include "ros2_socketcan/socket_can_receiver_node.hpp"
 #include "ros2_socketcan/socket_can_common.hpp"
 
-#include <cie_thread_configurator/cie_thread_configurator.hpp>
+#include <agnocast_cie_thread_configurator/cie_thread_configurator.hpp>
 
 #include <chrono>
 #include <memory>
@@ -82,7 +82,7 @@ LNI::CallbackReturn SocketCanReceiverNode::on_configure(const lc::State & state)
   }
 
   receiver_thread_ = std::make_unique<std::thread>(
-    cie_thread_configurator::spawn_non_ros2_thread(
+    agnocast_cie_thread_configurator::spawn_non_ros2_thread(
     "socket_can_receiver:receiver_thread", &SocketCanReceiverNode::receive, this));
 
   return LNI::CallbackReturn::SUCCESS;

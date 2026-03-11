@@ -12,9 +12,20 @@ endif()
 
 # find dependencies
 find_package(ament_cmake_auto REQUIRED)
-find_package(agnocast_components REQUIRED)
-find_package(agnocast_cie_thread_configurator REQUIRED)
 ament_auto_find_build_dependencies()
+
+# if ENABLE_AGNOCAST environment variable is set to 1, enable agnocast components
+# and define a compile definition to conditionally compile code that depends on agnocast
+set(ENABLE_AGNOCAST_VAL "$ENV{ENABLE_AGNOCAST}")
+if(NOT DEFINED ENV{ENABLE_AGNOCAST} OR ENABLE_AGNOCAST_VAL STREQUAL "")
+  set(ENABLE_AGNOCAST_VAL "0")
+endif()
+
+if(ENABLE_AGNOCAST_VAL STREQUAL "1")
+  find_package(agnocast_components REQUIRED)
+  find_package(agnocast_cie_thread_configurator REQUIRED)
+  add_compile_definitions(USE_AGNOCAST_ENABLED)
+endif()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/socket_can_common.cpp
@@ -25,19 +36,29 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 ament_auto_add_library(socket_can_receiver_node SHARED
   src/socket_can_receiver_node.cpp
 )
-ament_target_dependencies(socket_can_receiver_node
-  agnocast_cie_thread_configurator
-)
+
+if(ENABLE_AGNOCAST_VAL STREQUAL "1")
+  ament_target_dependencies(socket_can_receiver_node
+    agnocast_cie_thread_configurator
+  )
+endif()
 
 target_link_libraries(socket_can_receiver_node
   ${PROJECT_NAME}
 )
 
-agnocast_components_register_node(socket_can_receiver_node
-  PLUGIN "drivers::socketcan::SocketCanReceiverNode"
-  EXECUTABLE socket_can_receiver_node_exe
-  EXECUTOR CallbackIsolatedAgnocastExecutor
-)
+if(ENABLE_AGNOCAST_VAL STREQUAL "1")
+  agnocast_components_register_node(socket_can_receiver_node
+    PLUGIN "drivers::socketcan::SocketCanReceiverNode"
+    EXECUTABLE socket_can_receiver_node_exe
+    EXECUTOR CallbackIsolatedAgnocastExecutor
+  )
+else()
+  rclcpp_components_register_node(socket_can_receiver_node
+    PLUGIN "drivers::socketcan::SocketCanReceiverNode"
+    EXECUTABLE socket_can_receiver_node_exe
+  )
+endif()
 
 ament_auto_add_library(socket_can_sender_node SHARED
   src/socket_can_sender_node.cpp
@@ -47,11 +68,18 @@ target_link_libraries(socket_can_sender_node
   ${PROJECT_NAME}
 )
 
-agnocast_components_register_node(socket_can_sender_node
-  PLUGIN "drivers::socketcan::SocketCanSenderNode"
-  EXECUTABLE socket_can_sender_node_exe
-  EXECUTOR CallbackIsolatedAgnocastExecutor
-)
+if(ENABLE_AGNOCAST_VAL STREQUAL "1")
+  agnocast_components_register_node(socket_can_sender_node
+    PLUGIN "drivers::socketcan::SocketCanSenderNode"
+    EXECUTABLE socket_can_sender_node_exe
+    EXECUTOR CallbackIsolatedAgnocastExecutor
+  )
+else()
+  rclcpp_components_register_node(socket_can_sender_node
+    PLUGIN "drivers::socketcan::SocketCanSenderNode"
+    EXECUTABLE socket_can_sender_node_exe
+  )
+endif()
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

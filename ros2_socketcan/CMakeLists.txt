@@ -16,12 +16,17 @@ ament_auto_find_build_dependencies()
 
 # if ENABLE_AGNOCAST environment variable is set to 1, enable agnocast components
 # and define a compile definition to conditionally compile code that depends on agnocast
-set(ENABLE_AGNOCAST_VAL "$ENV{ENABLE_AGNOCAST}")
-if(NOT DEFINED ENV{ENABLE_AGNOCAST} OR ENABLE_AGNOCAST_VAL STREQUAL "")
-  set(ENABLE_AGNOCAST_VAL "0")
+set(ENABLE_AGNOCAST_DEFAULT "$ENV{ENABLE_AGNOCAST}")
+if(ENABLE_AGNOCAST_DEFAULT STREQUAL "1")
+  set(ENABLE_AGNOCAST_DEFAULT "ON")
+else()
+  # default to OFF when the environment variable is unset or not equal to "1"
+  set(ENABLE_AGNOCAST_DEFAULT "OFF")
 endif()
 
-if(ENABLE_AGNOCAST_VAL STREQUAL "1")
+option(ENABLE_AGNOCAST "Enable Agnocast components" ${ENABLE_AGNOCAST_DEFAULT})
+
+if(ENABLE_AGNOCAST)
   find_package(agnocast_components REQUIRED)
   find_package(agnocast_cie_thread_configurator REQUIRED)
   add_compile_definitions(USE_AGNOCAST_ENABLED)
@@ -37,7 +42,7 @@ ament_auto_add_library(socket_can_receiver_node SHARED
   src/socket_can_receiver_node.cpp
 )
 
-if(ENABLE_AGNOCAST_VAL STREQUAL "1")
+if(ENABLE_AGNOCAST)
   ament_target_dependencies(socket_can_receiver_node
     agnocast_cie_thread_configurator
   )
@@ -47,7 +52,7 @@ target_link_libraries(socket_can_receiver_node
   ${PROJECT_NAME}
 )
 
-if(ENABLE_AGNOCAST_VAL STREQUAL "1")
+if(ENABLE_AGNOCAST)
   agnocast_components_register_node(socket_can_receiver_node
     PLUGIN "drivers::socketcan::SocketCanReceiverNode"
     EXECUTABLE socket_can_receiver_node_exe
@@ -68,7 +73,7 @@ target_link_libraries(socket_can_sender_node
   ${PROJECT_NAME}
 )
 
-if(ENABLE_AGNOCAST_VAL STREQUAL "1")
+if(ENABLE_AGNOCAST)
   agnocast_components_register_node(socket_can_sender_node
     PLUGIN "drivers::socketcan::SocketCanSenderNode"
     EXECUTABLE socket_can_sender_node_exe

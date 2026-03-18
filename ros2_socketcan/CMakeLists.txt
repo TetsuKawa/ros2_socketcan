@@ -29,7 +29,6 @@ option(ENABLE_AGNOCAST "Enable Agnocast components" ${ENABLE_AGNOCAST_DEFAULT})
 if(ENABLE_AGNOCAST)
   find_package(agnocast_components REQUIRED)
   find_package(agnocast_cie_thread_configurator REQUIRED)
-  add_compile_definitions(USE_AGNOCAST_ENABLED)
 endif()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
@@ -43,6 +42,7 @@ ament_auto_add_library(socket_can_receiver_node SHARED
 )
 
 if(ENABLE_AGNOCAST)
+  target_compile_definitions(socket_can_receiver_node PRIVATE USE_AGNOCAST_ENABLED)
   ament_target_dependencies(socket_can_receiver_node
     agnocast_cie_thread_configurator
   )
